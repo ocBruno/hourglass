@@ -129,14 +129,13 @@ camera.position.z = 60;
 camera.position.y -= 10;
 
 const controls = new OrbitControls( camera, renderer.domElement );
+controls.autoRotate = true
+controls.autoRotateSpeed = 10
 controls.update()
 
 function animate() {
     requestAnimationFrame( animate );
     controls.update();
-    fullLatheMesh.rotation.y += 0.01;
-    topCylinder.rotation.y += 0.01;
-    bottomCylinder.rotation.y += 0.01;
 	renderer.render( scene, camera );
 }
 animate();
