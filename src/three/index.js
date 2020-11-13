@@ -3,6 +3,7 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+camera.filmGauge = 15   
 const renderer = new THREE.WebGLRenderer();
 
 renderer.setSize( window.innerWidth, window.innerHeight );
@@ -34,10 +35,11 @@ for ( let i = -10; i <= 0; i ++ ) {
 const bottomWaterPoints = [], topWaterPoints = [];
 
 for ( let i = 0; i < 5; i ++ ) {
-topWaterPoints.push( new THREE.Vector2( Math.sin( i * 0.20 ) * 9 + 5, ( i - 5 ) * 2 ) );
+topWaterPoints.push( new THREE.Vector2( Math.sin( i * 0.20 ) * 9 + 4, ( i - 4.8 ) * 1.8 - 1.8 ) );
 }
+
 for ( let i = -10; i <= 0; i ++ ) {
-    bottomWaterPoints.push( new THREE.Vector2( Math.sin( i * 0.20 ) * -9 + 5, ( i - 5 ) * 2 ) );
+    bottomWaterPoints.push( new THREE.Vector2( Math.sin( i * 0.2 ) * -9.6 + 4.5, ( i - 5.5 ) * 2 + 1) );
 }
 
 const topCylinderGeometry = new THREE.CylinderGeometry( 20, 20, 4, 64 );
@@ -64,7 +66,7 @@ const fullLatheGeometry = new THREE.Geometry()
 
 const latheMaterial =  new THREE.MeshPhongMaterial({
     color: new THREE.Color(`rgb(220, 220, 250)`),
-    opacity: 0.3,
+    opacity: 0.5,
     transparent: true,
   });
 
@@ -100,6 +102,14 @@ floorplane.receiveShadow = true;
 floorplane.rotation.x += Math.PI / 2;
 floorplane.position.y -= 33
 scene.add( floorplane );
+
+const ceilinggeometry = new THREE.CircleGeometry( 80.2, 42 );
+const ceilingmaterial = new THREE.MeshPhongMaterial({color: new THREE.Color(`rgb(5,5,12)`), side: THREE.DoubleSide});
+const ceilingplane = new THREE.Mesh( ceilinggeometry, ceilingmaterial );
+ceilingplane.receiveShadow = true;
+ceilingplane.rotation.x += Math.PI / 2;
+ceilingplane.position.y += 33
+scene.add( ceilingplane );
 
 const whiteLight = new THREE.Color(`rgb(255,255,223)`);
 const neonGreen = new THREE.Color(`rgb(25,235,25)`);
@@ -152,12 +162,12 @@ scene.add(light4);
 
  // creating a wave object
     var waveGeometry = new THREE.PlaneGeometry
-        (15, 11, 70, 70);
+        (15, 6, 70, 70);
     //geometry = new THREE.WireframeGeometry(geometry);
     var waveMaterial = new THREE.MeshPhongMaterial({color: waterColor, side: THREE.DoubleSide});
     const wave = new THREE.Mesh(waveGeometry, waveMaterial);
     wave.rotation.x -= 366;
-    wave.position.y -= 1.6;
+    wave.position.y -= 3;
     scene.add(wave);
 
 
@@ -183,28 +193,77 @@ function updateWave() {
     } catch(e) {
 
     }
-    
     wave.geometry.verticesNeedUpdate = true;
     wave.geometry.computeVertexNormals();
 }
 
 
     function updateHourGlass() {
-fullLatheMesh.rotation.y += 0.01
-topCylinder.rotation.y += 0.01
-bottomCylinder.rotation.y += 0.01
-topWaterMesh.rotation.y += 0.01
-bottomWaterMesh.rotation.y += 0.01
+            var t = Date.now() * 0.004;
+            
+        fullLatheMesh.rotation.y += 0.01
+        topCylinder.rotation.y += 0.01
+        bottomCylinder.rotation.y += 0.01
+        topWaterMesh.rotation.y += 0.01
+        bottomWaterMesh.rotation.y += 0.01
     }
 
 
-camera.position.z = 60;
-camera.position.y -= 10;
+camera.position.z = 50;
+camera.position.y -= 6;
+	var stars=[];
+	function addSphere(){
+
+				// The loop will move from z position of -1000 to z position 1000, adding a random particle at each position. 
+				for ( var z= -1000; z < 1000; z+=20 ) {
+		
+					// Make a sphere (exactly the same as before). 
+					var geometry   = new THREE.SphereGeometry(0.5, 32, 32)
+					var material = new THREE.MeshBasicMaterial( {color: waterColor} );
+					var sphere = new THREE.Mesh(geometry, material)
+		
+					// This time we give the sphere random x and y positions between -500 and 500
+					sphere.position.x = Math.random() * 1000 - 500;
+					sphere.position.y = Math.random() * 1000 - 500;
+		
+					// Then set the z position to where it is in the loop (distance of camera)
+					sphere.position.z = z;
+		
+					// scale it up a bit
+					sphere.scale.x = sphere.scale.y = 2;
+		
+					//add the sphere to the scene
+					scene.add( sphere );
+		
+					//finally push it to the stars array 
+					stars.push(sphere); 
+				}
+	}
+
+	function animateStars() { 
+				
+		// loop through each star
+		for(var i=0; i<stars.length; i++) {
+			
+			let star = stars[i]; 
+				
+			// and move it forward dependent on the mouseY position. 
+			star.position.z +=  i/10;
+				
+			// if the particle is too close move it to the back
+			if(star.position.z>1000) star.position.z-=2000; 
+			
+		}
+	
+	}
 
 function animate() {
+    animateStars();
     requestAnimationFrame( animate );
     updateWave();
     updateHourGlass()
+    
 	renderer.render( scene, camera );
 }
+addSphere()
 animate();
